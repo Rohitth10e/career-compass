@@ -75,10 +75,12 @@ pgsql
 Copy
 Edit
 Content-Type: application/json
+
 📝 Request Body:
 json
 Copy
 Edit
+
 {
   "topic": "JavaScript",
   "skillLevel": "Beginner"
@@ -151,7 +153,7 @@ Let’s build something amazing together! 💡
 This project is licensed under the MIT License.
 You’re free to use, modify, and distribute it for both personal and commercial use.
 
-💡 Powered by Google Gemini API & Node.js — Built with ❤️ by [Your Name]
+💡 Powered by Google Gemini API & Node.js — Built with ❤️
 
 yaml
 Copy
@@ -163,5 +165,3 @@ Edit
 - Replace `<your-repository-url>` with your actual GitHub repo URL.
 - Update `[Your Name]` with your name or GitHub handle.
 - Add a `LICENSE` file if you haven't already.
-
-Let me know if you want a version with GitHub shields, project logo, or deployment guide (e.g., for Render/Vercel/Heroku).
