@@ -75,10 +75,12 @@ pgsql
 Copy
 Edit
 Content-Type: application/json
+
 📝 Request Body:
 json
 Copy
 Edit
+
 {
   "topic": "JavaScript",
   "skillLevel": "Beginner"
