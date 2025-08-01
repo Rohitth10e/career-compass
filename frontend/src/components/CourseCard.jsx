@@ -1,80 +1,69 @@
-import { Star } from "lucide-react";
+import React from 'react';
+import { ArrowRight } from 'lucide-react';
 
-const CourseCard = ({ title, partner, rating, description, duration, level, category }) => {
-  const renderStars = (rating) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 !== 0;
-
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(
-        <Star key={i} className="w-4 h-4 fill-highlight text-highlight" />
-      );
-    }
-
-    if (hasHalfStar) {
-      stars.push(
-        <Star key="half" className="w-4 h-4 fill-highlight/50 text-highlight" />
-      );
-    }
-
-    const remainingStars = 5 - Math.ceil(rating);
-    for (let i = 0; i < remainingStars; i++) {
-      stars.push(
-        <Star key={`empty-${i}`} className="w-4 h-4 text-gray-300" />
-      );
-    }
-
-    return stars;
+// Helper function to generate a reliable search URL
+const generateSearchUrl = (title, platform) => {
+  const encodedTitle = encodeURIComponent(title);
+  
+  // Map of known platforms to their search URL structures
+  const platformSearchUrls = {
+    'udemy': `https://www.udemy.com/courses/search/?q=${encodedTitle}`,
+    'coursera': `https://www.coursera.org/search?query=${encodedTitle}`,
+    'pluralsight': `https://www.pluralsight.com/search?q=${encodedTitle}`,
+    'freecodecamp': `https://www.freecodecamp.org/news/search/?query=${encodedTitle}`,
+    'edx': `https://www.edx.org/search?q=${encodedTitle}`,
+    'codecademy': `https://www.codecademy.com/search?query=${encodedTitle}`,
+    'youtube': `https://www.youtube.com/results?search_query=${encodedTitle}`,
+    'github': `https://github.com/search?q=${encodedTitle}`,
   };
 
-  return (
-    <div className="bg-card rounded-xl p-6 shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-glow)] transition-[var(--transition-smooth)] hover:-translate-y-1 border border-border/50">
-      <div className="flex items-center justify-between mb-4">
-        <span className="px-3 py-1 bg-primary/10 text-primary text-xs font-medium rounded-full">
-          {category}
-        </span>
-        <span className="text-xs text-muted-foreground font-medium">
-          {level}
-        </span>
-      </div>
+  const lowerCasePlatform = platform.toLowerCase();
+  
+  // Find a matching platform keyword within the platform string from the API
+  const matchedPlatformKey = Object.keys(platformSearchUrls).find(key => 
+    lowerCasePlatform.includes(key)
+  );
 
-      <h3 className="text-lg font-bold text-foreground mb-2 line-clamp-2">
+  // Return the specific platform search URL if a keyword is found
+  if (matchedPlatformKey) {
+    return platformSearchUrls[matchedPlatformKey];
+  }
+
+  // Fallback to a generic Google search for unknown platforms
+  return `https://www.google.com/search?q=${encodedTitle}+${encodeURIComponent(platform)}`;
+};
+
+
+const CourseCard = ({ title, partner, description, url }) => {
+  // Generate a reliable search URL instead of using the potentially invalid one from the API
+  const searchUrl = generateSearchUrl(title, partner);
+
+  return (
+    <a
+      href={searchUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group relative block h-full bg-card p-8 rounded-2xl shadow-md border border-border/50 overflow-hidden transition-all duration-300 ease-in-out hover:shadow-lg hover:border-primary/50 hover:-translate-y-1"
+      aria-label={`Learn more about ${title} on ${partner}`}
+    >
+      {/* Platform name */}
+      <p className="text-sm font-medium text-muted-foreground mb-2">{partner}</p>
+      
+      {/* Course Title */}
+      <h3 className="text-xl font-bold text-foreground mb-3">
         {title}
       </h3>
 
-      <div className="flex items-center mb-3">
-        <div className="flex items-center mr-2">
-          {renderStars(rating)}
-        </div>
-        <span className="text-sm font-semibold text-foreground mr-1">
-          {rating}
-        </span>
-        <span className="text-xs text-muted-foreground">
-          ({Math.floor(Math.random() * 2000) + 500} reviews)
-        </span>
-      </div>
-
-      <p className="text-sm text-muted-foreground mb-4 line-clamp-3 leading-relaxed">
+      {/* Course Description */}
+      <p className="text-sm text-muted-foreground leading-relaxed">
         {description}
       </p>
 
-      <div className="flex items-center justify-between mb-4">
-        <span className="text-xs text-muted-foreground">
-          📚 {duration}
-        </span>
-        <span className="text-xs text-muted-foreground">
-          by {partner}
-        </span>
+      {/* Animated CTA Arrow */}
+      <div className="absolute bottom-8 right-8 text-muted-foreground transition-all duration-300 ease-in-out group-hover:text-primary group-hover:translate-x-1">
+        <ArrowRight className="w-6 h-6" />
       </div>
-
-      <button
-        className="w-full bg-primary hover:bg-primary-glow text-primary-foreground font-semibold py-3 px-4 rounded-lg transition-[var(--transition-smooth)] hover:shadow-[var(--shadow-elegant)]"
-        aria-label={`View course: ${title}`}
-      >
-        View Course
-      </button>
-    </div>
+    </a>
   );
 };
 

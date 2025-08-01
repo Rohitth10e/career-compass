@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Search, ChevronDown, Users, BookOpen, TrendingUp } from "lucide-react";
+import { Search, ChevronDown, Users, BookOpen, TrendingUp, Link, Lightbulb, Zap, AlertTriangle } from "lucide-react";
 import Header from "../components/Header";
 import LoadingSpinner from "../components/LoadingSpinner";
-import RoadmapSection from "../components/RoadmapSection";
 import CourseCard from "../components/CourseCard";
 import ErrorModal from "../components/ErrorModal";
 import compassHero from "../assets/compass-hero.jpg";
+import axios from "axios";
 
 const Index = () => {
   const [topic, setTopic] = useState("");
@@ -14,49 +14,6 @@ const Index = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showError, setShowError] = useState(false);
-
-  // Mock data for demonstration
-  const mockRoadmapData = {
-    achievement: "Master the fundamentals of React and build practical skills that will advance your career. You'll gain hands-on experience with industry-standard tools and methodologies, enabling you to tackle real-world challenges with confidence.",
-    keyConcepts: [
-      "Core React principles and best practices",
-      "Industry-standard tools and frameworks", 
-      "Real-world application scenarios",
-      "Hands-on project development",
-      "Problem-solving methodologies",
-      "Performance optimization techniques"
-    ]
-  };
-
-  const mockCourses = [
-    {
-      title: "Complete React Masterclass",
-      partner: "TechEdu",
-      rating: 4.8,
-      description: "Comprehensive course covering all fundamentals with hands-on projects",
-      duration: "12 weeks",
-      level: "Intermediate",
-      category: "Frontend"
-    },
-    {
-      title: "React for Professionals", 
-      partner: "CodeAcademy",
-      rating: 4.6,
-      description: "Industry-focused curriculum with real case studies",
-      duration: "8 weeks",
-      level: "Intermediate", 
-      category: "Frontend"
-    },
-    {
-      title: "Advanced React Techniques",
-      partner: "DevMasters",
-      rating: 4.9,
-      description: "Deep dive into advanced concepts and optimization",
-      duration: "10 weeks",
-      level: "Intermediate",
-      category: "Frontend"
-    }
-  ];
 
   const handleGenerateRoadmap = async () => {
     if (!topic.trim()) {
@@ -67,13 +24,20 @@ const Index = () => {
 
     setLoading(true);
     setError(null);
-    
+    setRoadmap(null); // Clear previous results
+
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setRoadmap(mockRoadmapData);
+      // Make a POST request to your running backend server
+      const response = await axios.post('http://localhost:3000/api/get-roadmap', {
+        topic,
+        skillLevel
+      });
+      // Set the roadmap state with the data from the API
+      setRoadmap(response.data);
+
     } catch (err) {
-      setError("Unable to generate roadmap. Please check your input and try again.");
+      const errorMessage = err.response?.data?.error || "Unable to generate roadmap. Please try again.";
+      setError(errorMessage);
       setShowError(true);
     } finally {
       setLoading(false);
@@ -89,7 +53,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-background to-accent/5 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -138,7 +102,7 @@ const Index = () => {
             {/* Right Illustration */}
             <div className="relative">
               <div className="relative rounded-2xl overflow-hidden shadow-[var(--shadow-elegant)]">
-                <img 
+                <img
                   src={compassHero}
                   alt="Career guidance compass illustration"
                   className="w-full h-auto object-cover"
@@ -182,9 +146,6 @@ const Index = () => {
                     aria-label="Topic input field"
                   />
                 </div>
-                {error && error.includes("topic") && (
-                  <p className="text-destructive text-sm mt-1 text-left">Please enter a topic</p>
-                )}
               </div>
 
               {/* Skill Level Dropdown */}
@@ -228,44 +189,131 @@ const Index = () => {
         </section>
       )}
 
-      {/* Roadmap Results */}
+      {/* --- Roadmap Results --- */}
       {roadmap && !loading && (
         <>
-          <RoadmapSection roadmapData={roadmap} />
-          
+          {/* Learning Path Section */}
+          <section id="learning-path" className="py-16 bg-background">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl font-bold text-foreground">Your Learning Path for {roadmap.topic}</h2>
+                <p className="mt-4 text-lg text-muted-foreground">{roadmap.what_you_will_achieve}</p>
+              </div>
+              
+              <div className="space-y-12">
+                {roadmap.learning_modules.map(module => (
+                  <div key={module.module_number} className="p-8 bg-card rounded-2xl shadow-[var(--shadow-card)] border border-border/50">
+                    <h3 className="text-2xl font-bold text-primary mb-2">Module {module.module_number}: {module.module_title}</h3>
+                    <p className="text-muted-foreground mb-6 italic">{module.module_goal}</p>
+                    
+                    <div className="space-y-4 mb-6">
+                      {module.key_concepts.map((concept, idx) => (
+                        <div key={idx} className="p-4 border-l-4 border-accent bg-accent/10 rounded-r-lg">
+                          <h4 className="font-semibold text-foreground">{concept.concept}</h4>
+                          <p className="text-muted-foreground text-sm mt-1">{concept.description}</p>
+                          <p className="text-xs text-primary/80 mt-2"><strong>Why it's important:</strong> {concept.why_it_is_important}</p>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-semibold text-foreground mb-2 flex items-center"><Zap className="w-4 h-4 mr-2 text-highlight"/>Project Idea</h4>
+                      <p className="text-muted-foreground text-sm">{module.project_idea}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
           {/* Recommended Courses */}
           <section className="py-16 bg-muted/30">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="text-center mb-12">
                 <h2 className="text-3xl font-bold text-foreground mb-4">Recommended Courses</h2>
                 <p className="text-lg text-muted-foreground">
-                  Curated courses to help you master {topic || 'your chosen topic'}
+                  Curated courses to help you master {roadmap.topic}
                 </p>
               </div>
-              
+
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {mockCourses.map((course, index) => (
-                  <CourseCard key={index} {...course} />
+                {roadmap.recommended_courses.map((course, index) => (
+                  <CourseCard 
+                    key={index} 
+                    title={course.title}
+                    partner={course.platform}
+                    description={course.description}
+                    rating={4.5} // Placeholder
+                    duration="Varies" // Placeholder
+                    level={roadmap.skillLevel}
+                    category="Online Course"
+                    url={course.url}
+                  />
                 ))}
               </div>
             </div>
           </section>
-        </>
-      )}
 
-      {/* No Results State */}
-      {roadmap === null && !loading && topic && (
-        <section className="py-16 text-center">
-          <div className="max-w-md mx-auto">
-            <p className="text-muted-foreground mb-4">No courses available for this topic</p>
-            <button
-              onClick={handleGenerateRoadmap}
-              className="text-primary hover:text-primary-glow font-medium underline"
-            >
-              Retry
-            </button>
-          </div>
-        </section>
+          {/* Tips for Success Section */}
+          <section className="py-16">
+             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="text-center mb-12">
+                    <h2 className="text-3xl font-bold text-foreground mb-4">Tips for Success</h2>
+                    <p className="text-lg text-muted-foreground">Avoid common pitfalls with this advice.</p>
+                </div>
+                <div className="space-y-6">
+                    {roadmap.common_pitfalls_and_tips.map((item, index) => (
+                        <div key={index} className="bg-card p-6 rounded-2xl border border-border/50">
+                            <h4 className="font-semibold text-foreground flex items-center"><AlertTriangle className="w-5 h-5 mr-2 text-destructive"/> {item.pitfall}</h4>
+                            <p className="text-muted-foreground mt-2 text-sm flex items-start"><Lightbulb className="w-5 h-5 mr-2 text-highlight flex-shrink-0 mt-1"/> {item.tip}</p>
+                        </div>
+                    ))}
+                </div>
+             </div>
+          </section>
+
+          {/* Other Resources Section */}
+          <section className="py-16 bg-muted/30">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl font-bold text-foreground mb-4">More Resources</h2>
+                <p className="text-lg text-muted-foreground">
+                  Supplement your learning with these articles, videos, and tutorials.
+                </p>
+              </div>
+              <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-6">
+                {roadmap.other_resources.map((resource, index) => (
+                  <a 
+                    key={index} 
+                    href={resource.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="block p-6 bg-card rounded-2xl shadow-[var(--shadow-card)] border border-border/50 hover:border-primary transition-colors group"
+                  >
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0">
+                        <Link className="h-6 w-6 text-primary" />
+                      </div>
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-primary capitalize">{resource.type.replace(/_/g, ' ')}</p>
+                        <p className="text-lg font-semibold text-foreground mt-1 group-hover:text-primary">{resource.title}</p>
+                        <p className="mt-2 text-sm text-muted-foreground">{resource.description}</p>
+                      </div>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </section>
+
+           {/* Next Steps Section */}
+           <section className="py-16">
+                <div className="max-w-3xl mx-auto text-center px-4">
+                    <h2 className="text-3xl font-bold text-foreground mb-4">What's Next?</h2>
+                    <p className="text-lg text-muted-foreground">{roadmap.next_steps}</p>
+                </div>
+           </section>
+        </>
       )}
 
       {/* Error Modal */}
